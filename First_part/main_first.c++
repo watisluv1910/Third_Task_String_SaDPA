@@ -6,31 +6,30 @@
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
-#include "stdio.h" 
+#include <stdio.h>
 
 using namespace std;
 
 int resizeWords(char**& array, int oldLength, int newLength);
 int resizeWord(char*& array, int oldLength, int newLength);
+int getSentence(char**& sentence, int& sentenceLength);
 void outputTransformedSentence(char**& sentence, char**& specialWords, 
 	int& sentenceLength, int& specialWordsNumber);
 void invertWord(char*& array);
 void outputArray(char** array, int length);
-int removeArrays(char**& sentence, char**& specialWords,
-	int& sentenceLength, int& specialWordsNumber);
 
 int resizeWords(char** &array, int oldLength, int newLength) {
 
 	char** resizedArray = new char* [newLength];
 
-	for (size_t i = 0; i < newLength; i++) {
+	for (int i = 0; i < newLength; i++) {
 
 		resizedArray[i] = new char[1];
 	}
 
-	for (size_t i = 0; i < oldLength; i++) {
+	for (int i = 0; i < oldLength; i++) {
 
-		resizeWord(resizedArray[i], 1, strlen(array[i]) + 1);
+		resizeWord(resizedArray[i], 1, _msize(array[i]) / sizeof(char) + 1);
 		strcpy(resizedArray[i], array[i]);
 	}
 
@@ -44,8 +43,11 @@ int resizeWord(char* &array, int oldLength, int newLength) {
 
 	char* resizedArray = new char[newLength];
 
-	memcpy(resizedArray, array, oldLength * sizeof(char));
-		
+	for (int i = 0; i < oldLength; i++) {
+
+		resizedArray[i] = array[i];
+	}
+
 	delete[] array;
 	array = resizedArray;
 
@@ -57,21 +59,21 @@ int getSentence(char**& sentence, int &sentenceLength) {
 	int wordLength = 1;
 
 	char tempVar;
-	cin.get(tempVar);
+	tempVar = getchar();
 
 	while (tempVar != '.' && tempVar != '?' 
 		&& tempVar != '!' && tempVar != '\n') {
 
 		if (tempVar == ' ') {
 
-			cin.get(tempVar);
+			tempVar = getchar();
 		}
 
 		else if (tempVar == ',') {
 
 			if (sentenceLength == 1) {
 				
-				cin.get(tempVar);
+				tempVar = getchar();
 			}
 
 			else {
@@ -82,7 +84,7 @@ int getSentence(char**& sentence, int &sentenceLength) {
 					sentence[sentenceLength - 1][wordLength - 1] = tempVar;
 
 					wordLength++;
-					cin.get(tempVar);
+					tempVar = getchar();
 				}
 
 				else {
@@ -116,7 +118,7 @@ int getSentence(char**& sentence, int &sentenceLength) {
 					sentence[sentenceLength - 1][wordLength - 1] = tempVar;
 
 					wordLength++;
-					cin.get(tempVar);
+					tempVar = getchar();
 				}
 
 				else {
@@ -141,22 +143,28 @@ int getSentence(char**& sentence, int &sentenceLength) {
 	}
 
 	sentenceLength--;
+
+	return 1;
 }
 
 void outputTransformedSentence(char** &sentence, char** &specialWords, 
 	int &sentenceLength, int &specialWordsNumber) {
 
 	int lastWordLength = strlen(sentence[sentenceLength - 1]);
-
 	
-	for (size_t i = 0; i < sentenceLength - 1; i++) {
+	for (int i = 0; i < sentenceLength - 1; i++) {
 
 		if (sentence[i][0] != ',' && sentenceLength > 1) {
 
 			if (strlen(sentence[i]) > lastWordLength) {
 
 				invertWord(sentence[i]);
-				cout << sentence[i] << ' ';
+				printf_s("%s", sentence[i]);
+
+				if (sentence[i + 1][0] != ',') {
+
+					printf_s(" ");
+				}
 			}
 
 			else if (strlen(sentence[i]) < lastWordLength) {
@@ -165,27 +173,24 @@ void outputTransformedSentence(char** &sentence, char** &specialWords,
 					1, strlen(sentence[i]));
 				strcpy(specialWords[specialWordsNumber - 1], sentence[i]);
 
-				if (i != 0) { 
-
-					resizeWords(specialWords, specialWordsNumber, specialWordsNumber + 1);
-				}
+				resizeWords(specialWords, specialWordsNumber, specialWordsNumber + 1);
 				
 				specialWordsNumber++;
 			}
 
 			else {
 
-				cout << sentence[i] << ' ';
+				printf_s("%s ", sentence[i]);
 			}
 		}
 
 		else {
 
-			cout << ", ";
+			printf_s(", ");
 		}
 	}
 
-	cout << sentence[sentenceLength - 1] << '.' << endl;
+	printf_s("%s.", sentence[sentenceLength - 1]);
 }
 
 void invertWord(char*& array) {
@@ -205,26 +210,10 @@ void invertWord(char*& array) {
 
 void outputArray(char** array, int length) {
 
-	for (size_t i = 0; i < length - 1; i++) {
-
+	for (int i = 0; i < length - 1; i++) {
+		
 		puts(array[i]);
 	}
-}
-
-int removeArrays(char**& sentence, char**& specialWords, 
-	int& sentenceLength, int& specialWordsNumber) {
-
-	for (size_t i = 0; i < sentenceLength; i++) {
-
-		delete[] sentence[i];
-	}
-
-	for (size_t i = 0; i < specialWordsNumber; i++) {
-
-		delete[] specialWords[i];
-	}
-
-	return 1;
 }
 
 int main() {
@@ -243,28 +232,25 @@ int main() {
 
 		int sentenceLength = 1, specialWordsNumber = 1;
 
-		cout << "Enter the sentence:\n";
+		printf_s("Enter the sentence:\n");
 
 		if (!getSentence(sentence, sentenceLength) || sentenceLength <= 0) {
 
-			cout << "\nInput string processing error. Try again.\n";
+			printf_s("\nInput string processing error. Try again.\n");
 			continue;
 		}
 
-		cout << "\nThe transformed sentence:\n";
+		printf_s("\nThe transformed sentence:\n");
 		outputTransformedSentence(sentence,
 			specialWords, sentenceLength, specialWordsNumber);
 
-		cout << "\nThe list of 'special' words:\n";
+		printf_s("\nThe list of 'special' words:\n");
 		outputArray(specialWords, specialWordsNumber);
 
-		if (removeArrays(sentence,
-			specialWords, sentenceLength, specialWordsNumber)) {
-
-			cout << "\nEnter <1> to restart the programm.\n"
-				"Enter <0> to end the programm.\nYour choise is:\n";
-			cin >> path;
-		}
+		printf_s("\nEnter <1> to restart the programm.\n"
+			"Enter <0> to end the programm.\nYour choise is:\n");
+		
+		cin >> path;
 
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
